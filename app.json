@@ -8,7 +8,8 @@
     "scheme": "healthloggersdk55",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "icon": "./assets/expo.icon",
+      "bundleIdentifier": "com.keithkurak.health-logger-55"
     },
     "android": {
       "adaptiveIcon": {
@@ -17,7 +18,7 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": true
     },
     "web": {
       "output": "static",
@@ -36,11 +37,57 @@
         }
       ],
       "expo-sharing",
-      "expo-widgets"
+      [
+        "expo-widgets",
+        {
+          "widgets": [
+            {
+              "name": "MyWidget",
+              "displayName": "My Widget",
+              "description": "A sample home screen widget",
+              "supportedFamilies": [
+                "systemSmall",
+                "systemMedium",
+                "systemLarge"
+              ]
+            }
+          ]
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "build": {
+          "experimental": {
+            "ios": {
+              "appExtensions": [
+                {
+                  "targetName": "ExpoWidgetsTarget",
+                  "bundleIdentifier": "com.keithkurak.health-logger-55.ExpoWidgetsTarget",
+                  "entitlements": {
+                    "com.apple.security.application-groups": [
+                      "group.com.keithkurak.health-logger-55"
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "projectId": "2b65a658-ca5a-4239-8c6e-959e2d7b7ed8"
+      }
+    },
+    "owner": "expo-production",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/2b65a658-ca5a-4239-8c6e-959e2d7b7ed8"
     }
   }
 }
