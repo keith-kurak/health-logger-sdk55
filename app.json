@@ -34,7 +34,9 @@
             "imageWidth": 76
           }
         }
-      ]
+      ],
+      "expo-sharing",
+      "expo-widgets"
     ],
     "experiments": {
       "typedRoutes": true,
