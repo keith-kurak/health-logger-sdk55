@@ -16,6 +16,7 @@ import {
   getDayDisplayValue,
   localDateKey,
   readEntries,
+  seedTodayIfNeeded,
 } from '@/lib/stats';
 
 function localMidnightToday(): Date {
@@ -38,6 +39,7 @@ export default function DashboardScreen() {
   const isToday = dateKey === localDateKey(localMidnightToday());
 
   const loadStats = useCallback(() => {
+    seedTodayIfNeeded();
     const snapshot = {} as Record<StatName, string>;
     for (const s of STATS) {
       snapshot[s.name] = getDayDisplayValue(s, readEntries(s.name), dateKey);
