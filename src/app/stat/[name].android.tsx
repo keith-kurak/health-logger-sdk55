@@ -139,6 +139,7 @@ export default function StatDetailScreen() {
                         </Text>
                         <TextInput
                           ref={systolicRef}
+                          defaultValue=""
                           onChangeText={setSystolic}
                           keyboardType="numeric"
                           modifiers={[fillMaxWidth()]}
@@ -153,6 +154,7 @@ export default function StatDetailScreen() {
                         </Text>
                         <TextInput
                           ref={diastolicRef}
+                          defaultValue=""
                           onChangeText={setDiastolic}
                           keyboardType="numeric"
                           modifiers={[fillMaxWidth()]}
@@ -161,9 +163,9 @@ export default function StatDetailScreen() {
                       <Button
                         onPress={handleAdd}
                         variant="default"
-                        leadingIcon="rounded.Add"
-                        elementColors={{ containerColor: config.color, contentColor: '#ffffff' }}
-                      />
+                        elementColors={{ containerColor: config.color, contentColor: '#ffffff' }}>
+                        +
+                      </Button>
                     </Row>
                   ) : (
                     <Row
@@ -172,6 +174,7 @@ export default function StatDetailScreen() {
                       modifiers={[fillMaxWidth()]}>
                       <TextInput
                         ref={singleRef}
+                        defaultValue=""
                         onChangeText={setSingleValue}
                         keyboardType={config.inputType === 'decimal' ? 'decimal-pad' : 'numeric'}
                         modifiers={[weight(1)]}
@@ -179,9 +182,9 @@ export default function StatDetailScreen() {
                       <Button
                         onPress={handleAdd}
                         variant="default"
-                        leadingIcon="rounded.Add"
-                        elementColors={{ containerColor: config.color, contentColor: '#ffffff' }}
-                      />
+                        elementColors={{ containerColor: config.color, contentColor: '#ffffff' }}>
+                        +
+                      </Button>
                     </Row>
                   )}
                 </Column>
@@ -202,9 +205,10 @@ export default function StatDetailScreen() {
                   <ListItem.Trailing>
                     <Button
                       onPress={() => handleDelete(entry.ts)}
-                      leadingIcon="rounded.Delete"
                       variant="borderless"
-                    />
+                      elementColors={{ contentColor: theme.textSecondary }}>
+                      ×
+                    </Button>
                   </ListItem.Trailing>
                 </ListItem>
               ))}

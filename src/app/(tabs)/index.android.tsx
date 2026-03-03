@@ -1,36 +1,16 @@
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import {
-  Box,
-  Button,
-  Column,
-  Divider,
-  Host,
-  LazyColumn,
-  ListItem,
-  Row,
-  Text,
-} from '@expo/ui/jetpack-compose';
-import {
-  alpha,
-  background,
-  clip,
-  fillMaxSize,
-  fillMaxWidth,
-  paddingAll,
-  Shapes,
-  size,
-} from '@expo/ui/jetpack-compose/modifiers';
-
+import { DayNav } from '@/components/day-nav';
+import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useTheme } from '@/hooks/use-theme';
 import {
   STATS,
   StatName,
   addDays,
-  formatDateLabel,
   getDayDisplayValue,
   localDateKey,
   readEntries,
@@ -69,77 +49,95 @@ export default function DashboardScreen() {
 
   return (
     <ThemedView style={{ flex: 1 }}>
-      <SafeAreaView style={{ flex: 1 }}>
-        <Host style={{ flex: 1 }}>
-          <Column modifiers={[fillMaxSize()]}>
-
-            {/* DayNav in Compose */}
-            <Row
-              verticalAlignment="center"
-              horizontalArrangement="spaceBetween"
-              modifiers={[fillMaxWidth(), paddingAll(8)]}>
-              <Button
-                onPress={() => setCurrentDate((d) => addDays(d, -1))}
-                leadingIcon="rounded.ChevronLeft"
-                variant="borderless"
-              />
-              <Text style={{ typography: 'titleMedium', fontWeight: '600' }}>
-                {formatDateLabel(currentDate)}
-              </Text>
-              <Button
-                onPress={isToday ? undefined : () => setCurrentDate((d) => addDays(d, 1))}
-                leadingIcon="rounded.ChevronRight"
-                variant="borderless"
-                disabled={isToday}
-                modifiers={[alpha(isToday ? 0.3 : 1.0)]}
-              />
-            </Row>
-
-            <Divider modifiers={[fillMaxWidth()]} />
-
-            {/* Stats list */}
-            <LazyColumn modifiers={[fillMaxSize()]}>
-              {STATS.map((config) => {
-                const displayValue = displayValues[config.name];
-                const isEmpty = displayValue === '—';
-                return (
-                  <ListItem
-                    key={config.name}
-                    headline={config.label}
-                    supportingText={config.unit}
-                    onPress={() =>
-                      router.push({
-                        pathname: '/stat/[name]',
-                        params: { name: config.name, date: dateKey },
-                      })
-                    }
-                    modifiers={[fillMaxWidth()]}>
-                    <ListItem.Leading>
-                      {/* Colored rounded box — stat's brand color */}
-                      <Box
-                        contentAlignment="center"
-                        modifiers={[
-                          size(44, 44),
-                          clip(Shapes.RoundedCorner(12)),
-                          background(config.color + '26'),
-                        ]}
-                      />
-                    </ListItem.Leading>
-                    <ListItem.Trailing>
-                      <Text
-                        style={{ typography: 'titleMedium', fontWeight: '600' }}
-                        color={isEmpty ? theme.textSecondary : theme.text}>
-                        {displayValue}
-                      </Text>
-                    </ListItem.Trailing>
-                  </ListItem>
-                );
-              })}
-            </LazyColumn>
-
-          </Column>
-        </Host>
+      <SafeAreaView edges={['top']} style={{ backgroundColor: theme.background }}>
+        <DayNav
+          date={currentDate}
+          onPrev={() => setCurrentDate((d) => addDays(d, -1))}
+          onNext={() => setCurrentDate((d) => addDays(d, 1))}
+          isToday={isToday}
+        />
       </SafeAreaView>
+
+      <ScrollView style={{ flex: 1 }}>
+        {STATS.map((config) => {
+          const displayValue = displayValues[config.name];
+          const isEmpty = displayValue === '—';
+          const abbr =
+            config.name === 'bloodPressure' ? 'BP' : config.label.slice(0, 2).toUpperCase();
+
+          return (
+            <Pressable
+              key={config.name}
+              onPress={() =>
+                router.push({
+                  pathname: '/stat/[name]',
+                  params: { name: config.name, date: dateKey },
+                })
+              }
+              style={({ pressed }) => [styles.row, pressed && { opacity: 0.6 }]}>
+              {/* Icon box */}
+              <View
+                style={[
+                  styles.iconBox,
+                  { backgroundColor: config.color + '26' },
+                ]}>
+                <ThemedText style={[styles.abbr, { color: config.color }]}>{abbr}</ThemedText>
+              </View>
+
+              {/* Label + unit */}
+              <View style={styles.labelCol}>
+                <ThemedText style={styles.label}>{config.label}</ThemedText>
+                <ThemedText style={[styles.unit, { color: theme.textSecondary }]}>
+                  {config.unit}
+                </ThemedText>
+              </View>
+
+              {/* Display value */}
+              <ThemedText
+                style={[styles.value, { color: isEmpty ? theme.textSecondary : theme.text }]}>
+                {displayValue}
+              </ThemedText>
+            </Pressable>
+          );
+        })}
+      </ScrollView>
     </ThemedView>
   );
 }
+
+const styles = StyleSheet.create({
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: 'rgba(0,0,0,0.1)',
+  },
+  iconBox: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  abbr: {
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  labelCol: {
+    flex: 1,
+    gap: 2,
+  },
+  label: {
+    fontSize: 16,
+  },
+  unit: {
+    fontSize: 13,
+  },
+  value: {
+    fontSize: 18,
+    fontWeight: '600',
+  },
+});
