@@ -1,3 +1,4 @@
+import { Color } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 
@@ -22,7 +23,7 @@ export function DayNav({ date, onPrev, onNext, isToday }: DayNavProps) {
         {Platform.OS === 'ios' ? (
           <SymbolView name="chevron.left" size={20} weight="medium" tintColor={theme.text} />
         ) : (
-          <Text style={[styles.chevron, { color: theme.text }]}>{'‹'}</Text>
+          <Text style={[styles.chevron, { color: Color.android.dynamic.onSurface }]}>{'‹'}</Text>
         )}
       </Pressable>
 
@@ -36,7 +37,7 @@ export function DayNav({ date, onPrev, onNext, isToday }: DayNavProps) {
         {Platform.OS === 'ios' ? (
           <SymbolView name="chevron.right" size={20} weight="medium" tintColor={theme.text} />
         ) : (
-          <Text style={[styles.chevron, { color: theme.text }]}>{'›'}</Text>
+          <Text style={[styles.chevron, { color: Color.android.dynamic.onSurface }]}>{'›'}</Text>
         )}
       </Pressable>
     </View>
