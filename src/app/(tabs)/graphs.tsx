@@ -1,7 +1,7 @@
 import { SymbolView } from 'expo-symbols';
-import { useFocusEffect } from 'expo-router';
+import { Link, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
@@ -34,32 +34,42 @@ export default function GraphsScreen() {
           </ThemedText>
 
           {STATS.map((config) => (
-            <View key={config.name} style={styles.card}>
-              {/* Card header */}
-              <View style={styles.cardHeader}>
-                <View style={[styles.cardIcon, { backgroundColor: config.color + '26' }]}>
-                  <SymbolView
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    name={config.icon as any}
-                    size={18}
-                    tintColor={config.color}
-                  />
-                </View>
-                <View>
-                  <ThemedText type="default">{config.label}</ThemedText>
-                  <ThemedText type="small" themeColor="textSecondary">
-                    {config.unit} · last 7 days
-                  </ThemedText>
-                </View>
-              </View>
+            <Link
+              key={config.name}
+              href={{ pathname: '/trend/[name]', params: { name: config.name } }}
+              asChild
+            >
+              <Pressable>
+                <Link.AppleZoom>
+                  <View style={styles.card}>
+                    {/* Card header */}
+                    <View style={styles.cardHeader}>
+                      <View style={[styles.cardIcon, { backgroundColor: config.color + '26' }]}>
+                        <SymbolView
+                          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                          name={config.icon as any}
+                          size={18}
+                          tintColor={config.color}
+                        />
+                      </View>
+                      <View>
+                        <ThemedText type="default">{config.label}</ThemedText>
+                        <ThemedText type="small" themeColor="textSecondary">
+                          {config.unit} · last 7 days
+                        </ThemedText>
+                      </View>
+                    </View>
 
-              {/* Chart — no outer margin since card handles padding */}
-              <WeekChart
-                config={config}
-                entries={allEntries[config.name]}
-                inCard
-              />
-            </View>
+                    {/* Chart — no outer margin since card handles padding */}
+                    <WeekChart
+                      config={config}
+                      entries={allEntries[config.name]}
+                      inCard
+                    />
+                  </View>
+                </Link.AppleZoom>
+              </Pressable>
+            </Link>
           ))}
         </ScrollView>
       </SafeAreaView>
