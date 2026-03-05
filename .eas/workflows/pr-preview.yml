@@ -50,3 +50,8 @@ jobs:
     type: update
     params:
       branch: ${{ github.ref_name }}
+
+  comment_on_pr:
+    name: Comment on PR
+    after: [build_ios, build_android, publish_preview]
+    type: github-comment
