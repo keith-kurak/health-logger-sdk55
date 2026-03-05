@@ -17,10 +17,19 @@ import {
   onTapGesture,
   shapes,
 } from "@expo/ui/swift-ui/modifiers";
-import { Redirect, useFocusEffect, useRouter } from "expo-router";
-import { useCallback, useState } from "react";
+import {
+  DarkTheme,
+  DefaultTheme,
+  ThemeProvider,
+} from "@react-navigation/native";
+import { Stack, useRouter } from "expo-router";
+import { SplitView } from "expo-router/unstable-split-view";
+import React, { useCallback, useRef, useState } from "react";
+import { Platform, useColorScheme } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import type { SplitHostCommands } from "react-native-screens/experimental";
 
+import { AnimatedSplashOverlay } from "@/components/animated-icon";
 import { DayNav } from "@/components/day-nav";
 import { ThemedView } from "@/components/themed-view";
 import { useTheme } from "@/hooks/use-theme";
@@ -31,9 +40,12 @@ import {
   getDayDisplayValue,
   localDateKey,
   readEntries,
+  seedDataIfNeeded,
   seedTodayIfNeeded,
 } from "@/lib/stats";
-import { Platform } from "react-native";
+
+seedDataIfNeeded();
+seedTodayIfNeeded();
 
 function localMidnightToday(): Date {
   const d = new Date();
@@ -41,7 +53,11 @@ function localMidnightToday(): Date {
   return d;
 }
 
-export default function DashboardScreen() {
+function TrackerSidebar({
+  splitRef,
+}: {
+  splitRef: React.RefObject<SplitHostCommands | null>;
+}) {
   const router = useRouter();
   const theme = useTheme();
   const [currentDate, setCurrentDate] = useState<Date>(localMidnightToday);
@@ -56,6 +72,7 @@ export default function DashboardScreen() {
   const dateKey = localDateKey(currentDate);
   const isToday = dateKey === localDateKey(localMidnightToday());
 
+  // Reload stats whenever sidebar is visible
   const loadStats = useCallback(() => {
     seedTodayIfNeeded();
     const snapshot = {} as Record<StatName, string>;
@@ -65,15 +82,11 @@ export default function DashboardScreen() {
     setDisplayValues(snapshot);
   }, [dateKey]);
 
-  useFocusEffect(loadStats);
-
-  if (Platform.isPad) {
-    return <Redirect href="/stat/water?date=2025-03-04" />;
-  }
+  // Load on mount and when dateKey changes
+  React.useEffect(loadStats, [loadStats]);
 
   return (
     <ThemedView style={{ flex: 1 }}>
-      {/* RN header — matches native nav bar appearance */}
       <SafeAreaView
         edges={["top"]}
         style={{ backgroundColor: theme.background }}
@@ -86,7 +99,6 @@ export default function DashboardScreen() {
         />
       </SafeAreaView>
 
-      {/* SwiftUI stats list */}
       <Host style={{ flex: 1 }}>
         <List modifiers={[listStyle("insetGrouped")]}>
           {STATS.map((config) => {
@@ -98,17 +110,15 @@ export default function DashboardScreen() {
                 spacing={12}
                 modifiers={[
                   contentShape(shapes.rectangle()),
-                  onTapGesture(() =>
+                  onTapGesture(() => {
                     router.push({
                       pathname: "/stat/[name]",
                       params: { name: config.name, date: dateKey },
-                    }),
-                  ),
+                    });
+                  }),
                 ]}
               >
-                {/* Colored SF Symbol icon */}
                 <Image
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   systemName={config.icon.ios as any}
                   size={22}
                   color={config.color}
@@ -120,7 +130,6 @@ export default function DashboardScreen() {
                     ),
                   ]}
                 />
-                {/* Label + unit */}
                 <VStack alignment="leading" spacing={2}>
                   <Text>{config.label}</Text>
                   <Text
@@ -133,7 +142,6 @@ export default function DashboardScreen() {
                   </Text>
                 </VStack>
                 <Spacer />
-                {/* Display value */}
                 <Text
                   modifiers={[
                     font({ size: 22, weight: "semibold" }),
@@ -148,5 +156,50 @@ export default function DashboardScreen() {
         </List>
       </Host>
     </ThemedView>
+  );
+}
+
+function iPadLayout() {
+  const splitRef = useRef<SplitHostCommands>(null);
+
+  return (
+    <SplitView ref={splitRef}>
+      <SplitView.Column>
+        <TrackerSidebar splitRef={splitRef} />
+      </SplitView.Column>
+    </SplitView>
+  );
+}
+
+function iPhoneLayout() {
+  return (
+    <Stack
+      screenOptions={{
+        headerShown: false,
+        headerBackButtonDisplayMode: "minimal",
+      }}
+    >
+      <Stack.Screen name="(tabs)" />
+      <Stack.Screen
+        name="stat/[name]"
+        options={{
+          presentation: "formSheet",
+          sheetAllowedDetents: [0.5, 1],
+          sheetGrabberVisible: true,
+          sheetCornerRadius: 20,
+        }}
+      />
+    </Stack>
+  );
+}
+
+export default function RootLayout() {
+  const colorScheme = useColorScheme();
+
+  return (
+    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+      <AnimatedSplashOverlay />
+      {Platform.isPad ? iPadLayout() : iPhoneLayout()}
+    </ThemeProvider>
   );
 }
