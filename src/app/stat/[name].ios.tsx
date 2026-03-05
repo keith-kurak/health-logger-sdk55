@@ -1,6 +1,6 @@
 import { Stack, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
-import { Dimensions, View } from 'react-native';
+import { Alert, Dimensions, Share, View } from 'react-native';
 
 import {
   Button,
@@ -36,6 +36,7 @@ import {
   addEntry,
   deleteEntry,
   formatStatValue,
+  getDayDisplayValue,
   formatTime,
   getEntriesForDay,
   readEntries,
@@ -50,6 +51,8 @@ export default function StatDetailScreen() {
   const [singleValue, setSingleValue] = useState('');
   const [systolic, setSystolic] = useState('');
   const [diastolic, setDiastolic] = useState('');
+
+  const [showAddEntry, setShowAddEntry] = useState(false);
 
   const singleRef = useRef<TextFieldRef>(null);
   const systolicRef = useRef<TextFieldRef>(null);
@@ -90,6 +93,27 @@ export default function StatDetailScreen() {
       singleRef.current?.setText('');
     }
     setAllEntries(readEntries(name));
+    setShowAddEntry(false);
+  }
+
+  function handleShare() {
+    const total = getDayDisplayValue(config!, allEntries, date);
+    Share.share({ message: `${config!.label}: ${total} ${config!.unit} on ${longDateLabel}` });
+  }
+
+  function handleClearDay() {
+    if (dayEntries.length === 0) return;
+    Alert.alert('Clear All Entries', `Delete all ${config!.label.toLowerCase()} entries for today?`, [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: () => {
+          for (const entry of dayEntries) deleteEntry(name, entry.ts);
+          setAllEntries(readEntries(name));
+        },
+      },
+    ]);
   }
 
   function handleDelete(ts: number) {
@@ -113,6 +137,19 @@ export default function StatDetailScreen() {
           headerShadowVisible: false,
         }}
       />
+      <Stack.Toolbar placement="bottom">
+        <Stack.Toolbar.Button icon="square.and.arrow.up" onPress={handleShare}>
+          Share
+        </Stack.Toolbar.Button>
+        <Stack.Toolbar.Spacer />
+        <Stack.Toolbar.Button icon="plus" tintColor={config.color} onPress={() => setShowAddEntry((v) => !v)}>
+          Add
+        </Stack.Toolbar.Button>
+        <Stack.Toolbar.Spacer />
+        <Stack.Toolbar.Button icon="trash" tintColor="red" onPress={handleClearDay}>
+          Clear Day
+        </Stack.Toolbar.Button>
+      </Stack.Toolbar>
       <ThemedView style={{ flex: 1 }}>
         <Host style={{ flex: 1 }}>
           <List
@@ -132,57 +169,61 @@ export default function StatDetailScreen() {
               </RNHostView>
             </Section>
 
-            {/* Section 2: Add Entry */}
-            <Section header={<Text>Add Entry</Text>}>
-              {config.inputType === 'bloodPressure' ? (
-                <HStack spacing={8}>
-                  <VStack alignment="leading" spacing={4}>
-                    <Text modifiers={[foregroundStyle('secondaryLabel'), font({ size: 12 })]}>
-                      Systolic
-                    </Text>
-                    <TextField
-                      ref={systolicRef}
-                      onChangeText={setSystolic}
-                      placeholder="120"
-                      keyboardType="numeric"
+            {/* Section 2: Add Entry (shown when toolbar Add button is pressed) */}
+            {showAddEntry && (
+              <Section header={<Text>Add Entry</Text>}>
+                {config.inputType === 'bloodPressure' ? (
+                  <HStack spacing={8}>
+                    <VStack alignment="leading" spacing={4}>
+                      <Text modifiers={[foregroundStyle('secondaryLabel'), font({ size: 12 })]}>
+                        Systolic
+                      </Text>
+                      <TextField
+                        ref={systolicRef}
+                        autoFocus
+                        onChangeText={setSystolic}
+                        placeholder="120"
+                        keyboardType="numeric"
+                      />
+                    </VStack>
+                    <Text modifiers={[font({ size: 20 })]}>{'  /  '}</Text>
+                    <VStack alignment="leading" spacing={4}>
+                      <Text modifiers={[foregroundStyle('secondaryLabel'), font({ size: 12 })]}>
+                        Diastolic
+                      </Text>
+                      <TextField
+                        ref={diastolicRef}
+                        onChangeText={setDiastolic}
+                        placeholder="80"
+                        keyboardType="numeric"
+                      />
+                    </VStack>
+                    <Button
+                      label="Add"
+                      systemImage="plus"
+                      onPress={handleAdd}
+                      modifiers={[buttonStyle('borderedProminent'), tint(config.color), labelStyle('iconOnly'), controlSize('regular')]}
                     />
-                  </VStack>
-                  <Text modifiers={[font({ size: 20 })]}>{'  /  '}</Text>
-                  <VStack alignment="leading" spacing={4}>
-                    <Text modifiers={[foregroundStyle('secondaryLabel'), font({ size: 12 })]}>
-                      Diastolic
-                    </Text>
+                  </HStack>
+                ) : (
+                  <HStack spacing={8}>
                     <TextField
-                      ref={diastolicRef}
-                      onChangeText={setDiastolic}
-                      placeholder="80"
-                      keyboardType="numeric"
+                      ref={singleRef}
+                      autoFocus
+                      onChangeText={setSingleValue}
+                      placeholder={`Enter ${config.unit}`}
+                      keyboardType={config.inputType === 'decimal' ? 'decimal-pad' : 'numeric'}
                     />
-                  </VStack>
-                  <Button
-                    label="Add"
-                    systemImage="plus"
-                    onPress={handleAdd}
-                    modifiers={[buttonStyle('borderedProminent'), tint(config.color), labelStyle('iconOnly'), controlSize('regular')]}
-                  />
-                </HStack>
-              ) : (
-                <HStack spacing={8}>
-                  <TextField
-                    ref={singleRef}
-                    onChangeText={setSingleValue}
-                    placeholder={`Enter ${config.unit}`}
-                    keyboardType={config.inputType === 'decimal' ? 'decimal-pad' : 'numeric'}
-                  />
-                  <Button
-                    label="Add"
-                    systemImage="plus"
-                    onPress={handleAdd}
-                    modifiers={[buttonStyle('borderedProminent'), tint(config.color), labelStyle('iconOnly'), controlSize('regular')]}
-                  />
-                </HStack>
-              )}
-            </Section>
+                    <Button
+                      label="Add"
+                      systemImage="plus"
+                      onPress={handleAdd}
+                      modifiers={[buttonStyle('borderedProminent'), tint(config.color), labelStyle('iconOnly'), controlSize('regular')]}
+                    />
+                  </HStack>
+                )}
+              </Section>
+            )}
 
             {/* Section 3: Entry list with swipe-to-delete */}
             <Section header={<Text>{entriesCountLabel}</Text>}>

@@ -1,6 +1,6 @@
 import { Stack, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
-import { StyleSheet } from 'react-native';
+import { Pressable, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import {
@@ -39,6 +39,7 @@ export default function StatDetailScreen() {
   const config = STATS.find((s) => s.name === name);
 
   const [allEntries, setAllEntries] = useState<Entry[]>([]);
+  const [showAddEntry, setShowAddEntry] = useState(false);
   const [singleValue, setSingleValue] = useState('');
   const [systolic, setSystolic] = useState('');
   const [diastolic, setDiastolic] = useState('');
@@ -82,6 +83,7 @@ export default function StatDetailScreen() {
       singleRef.current?.setText('');
     }
     setAllEntries(readEntries(name));
+    setShowAddEntry(false);
   }
 
   function handleDelete(ts: number) {
@@ -121,74 +123,76 @@ export default function StatDetailScreen() {
               contentPadding={{ top: 16, bottom: 32, start: 16, end: 16 }}
               verticalArrangement={{ spacedBy: 12 }}>
 
-              {/* Add Entry card */}
-              <Card modifiers={[fillMaxWidth()]}>
-                <Column
-                  modifiers={[fillMaxWidth(), paddingAll(16)]}
-                  verticalArrangement={{ spacedBy: 8 }}>
-                  <Text style={{ typography: 'labelLarge' }}>Add Entry</Text>
+              {/* Add Entry card (shown when FAB is pressed) */}
+              {showAddEntry && (
+                <Card modifiers={[fillMaxWidth()]}>
+                  <Column
+                    modifiers={[fillMaxWidth(), paddingAll(16)]}
+                    verticalArrangement={{ spacedBy: 8 }}>
+                    <Text style={{ typography: 'labelLarge' }}>Add Entry</Text>
 
-                  {config.inputType === 'bloodPressure' ? (
-                    <Row
-                      verticalAlignment="bottom"
-                      horizontalArrangement={{ spacedBy: 8 }}
-                      modifiers={[fillMaxWidth()]}>
-                      <Column modifiers={[weight(1)]} verticalArrangement={{ spacedBy: 4 }}>
-                        <Text style={{ typography: 'labelSmall' }} color={theme.textSecondary}>
-                          Systolic
+                    {config.inputType === 'bloodPressure' ? (
+                      <Row
+                        verticalAlignment="bottom"
+                        horizontalArrangement={{ spacedBy: 8 }}
+                        modifiers={[fillMaxWidth()]}>
+                        <Column modifiers={[weight(1)]} verticalArrangement={{ spacedBy: 4 }}>
+                          <Text style={{ typography: 'labelSmall' }} color={theme.textSecondary}>
+                            Systolic
+                          </Text>
+                          <TextInput
+                            ref={systolicRef}
+                            defaultValue=""
+                            onChangeText={setSystolic}
+                            keyboardType="numeric"
+                            modifiers={[fillMaxWidth()]}
+                          />
+                        </Column>
+                        <Text style={{ typography: 'headlineSmall' }} color={theme.textSecondary}>
+                          {'/'}
                         </Text>
+                        <Column modifiers={[weight(1)]} verticalArrangement={{ spacedBy: 4 }}>
+                          <Text style={{ typography: 'labelSmall' }} color={theme.textSecondary}>
+                            Diastolic
+                          </Text>
+                          <TextInput
+                            ref={diastolicRef}
+                            defaultValue=""
+                            onChangeText={setDiastolic}
+                            keyboardType="numeric"
+                            modifiers={[fillMaxWidth()]}
+                          />
+                        </Column>
+                        <Button
+                          onPress={handleAdd}
+                          variant="default"
+                          elementColors={{ containerColor: config.color, contentColor: '#ffffff' }}>
+                          +
+                        </Button>
+                      </Row>
+                    ) : (
+                      <Row
+                        verticalAlignment="center"
+                        horizontalArrangement={{ spacedBy: 8 }}
+                        modifiers={[fillMaxWidth()]}>
                         <TextInput
-                          ref={systolicRef}
+                          ref={singleRef}
                           defaultValue=""
-                          onChangeText={setSystolic}
-                          keyboardType="numeric"
-                          modifiers={[fillMaxWidth()]}
+                          onChangeText={setSingleValue}
+                          keyboardType={config.inputType === 'decimal' ? 'decimal-pad' : 'numeric'}
+                          modifiers={[weight(1)]}
                         />
-                      </Column>
-                      <Text style={{ typography: 'headlineSmall' }} color={theme.textSecondary}>
-                        {'/'}
-                      </Text>
-                      <Column modifiers={[weight(1)]} verticalArrangement={{ spacedBy: 4 }}>
-                        <Text style={{ typography: 'labelSmall' }} color={theme.textSecondary}>
-                          Diastolic
-                        </Text>
-                        <TextInput
-                          ref={diastolicRef}
-                          defaultValue=""
-                          onChangeText={setDiastolic}
-                          keyboardType="numeric"
-                          modifiers={[fillMaxWidth()]}
-                        />
-                      </Column>
-                      <Button
-                        onPress={handleAdd}
-                        variant="default"
-                        elementColors={{ containerColor: config.color, contentColor: '#ffffff' }}>
-                        +
-                      </Button>
-                    </Row>
-                  ) : (
-                    <Row
-                      verticalAlignment="center"
-                      horizontalArrangement={{ spacedBy: 8 }}
-                      modifiers={[fillMaxWidth()]}>
-                      <TextInput
-                        ref={singleRef}
-                        defaultValue=""
-                        onChangeText={setSingleValue}
-                        keyboardType={config.inputType === 'decimal' ? 'decimal-pad' : 'numeric'}
-                        modifiers={[weight(1)]}
-                      />
-                      <Button
-                        onPress={handleAdd}
-                        variant="default"
-                        elementColors={{ containerColor: config.color, contentColor: '#ffffff' }}>
-                        +
-                      </Button>
-                    </Row>
-                  )}
-                </Column>
-              </Card>
+                        <Button
+                          onPress={handleAdd}
+                          variant="default"
+                          elementColors={{ containerColor: config.color, contentColor: '#ffffff' }}>
+                          +
+                        </Button>
+                      </Row>
+                    )}
+                  </Column>
+                </Card>
+              )}
 
               {/* Entry count label */}
               <Text style={{ typography: 'labelLarge' }} color={theme.textSecondary}>
@@ -217,6 +221,13 @@ export default function StatDetailScreen() {
           </Host>
 
         </SafeAreaView>
+
+        {/* FAB to toggle Add Entry */}
+        <Pressable
+          onPress={() => setShowAddEntry((v) => !v)}
+          style={[styles.fab, { backgroundColor: config.color }]}>
+          <ThemedText style={styles.fabIcon}>{showAddEntry ? '×' : '+'}</ThemedText>
+        </Pressable>
       </ThemedView>
     </>
   );
@@ -228,5 +239,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 8,
     textAlign: 'right',
+  },
+  fab: {
+    position: 'absolute',
+    bottom: 24,
+    right: 24,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 6,
+  },
+  fabIcon: {
+    color: '#ffffff',
+    fontSize: 28,
+    lineHeight: 30,
   },
 });
