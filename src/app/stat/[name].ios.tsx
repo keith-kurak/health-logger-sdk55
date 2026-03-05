@@ -174,7 +174,7 @@ export default function StatDetailScreen() {
           Clear Day
         </Stack.Toolbar.Button>
       </Stack.Toolbar>
-      <ThemedView style={{ flex: 1 }}>
+      <ThemedView style={{ flex: 1, backgroundColor: "transparent" }}>
         <Host style={{ flex: 1 }}>
           <List
             modifiers={[
