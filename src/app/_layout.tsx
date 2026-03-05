@@ -24,7 +24,18 @@ export default function RootLayout() {
           headerShown: false,
           headerBackButtonDisplayMode: "minimal",
         }}
-      />
+      >
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen
+          name="stat/[name]"
+          options={{
+            presentation: "formSheet",
+            sheetAllowedDetents: [0.5, 1],
+            sheetGrabberVisible: true,
+            sheetCornerRadius: 20,
+          }}
+        />
+      </Stack>
     </ThemeProvider>
   );
 }
