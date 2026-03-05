@@ -151,29 +151,6 @@ export default function StatDetailScreen() {
           headerShown: true,
         }}
       />
-      <Stack.Screen.Title>{config.label}</Stack.Screen.Title>
-      <Stack.Toolbar placement="left">
-        <Stack.Toolbar.Label>Cardio</Stack.Toolbar.Label>
-        <Stack.Toolbar.Button icon="square.and.arrow.up" onPress={handleShare}>
-          Share
-        </Stack.Toolbar.Button>
-        <Stack.Toolbar.Spacer />
-        <Stack.Toolbar.Button
-          icon="plus"
-          tintColor={config.color}
-          onPress={() => setShowAddEntry((v) => !v)}
-        >
-          Add
-        </Stack.Toolbar.Button>
-        <Stack.Toolbar.Spacer />
-        <Stack.Toolbar.Button
-          icon="trash"
-          tintColor="red"
-          onPress={handleClearDay}
-        >
-          Clear Day
-        </Stack.Toolbar.Button>
-      </Stack.Toolbar>
       <ThemedView style={{ flex: 1, backgroundColor: "transparent" }}>
         <Host style={{ flex: 1 }}>
           <List
