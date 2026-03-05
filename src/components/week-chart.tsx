@@ -1,4 +1,5 @@
-import { StyleSheet, View } from 'react-native';
+import { Color } from 'expo-router';
+import { Platform, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -47,8 +48,13 @@ export function WeekChart({ config, entries, inCard, noBackground }: WeekChartPr
       style={[styles.container, inCard && styles.containerInCard, noBackground && styles.transparent]}>
       {days.map((day) => {
         const barH = day.nv !== null ? Math.max((day.nv / maxVal) * BAR_MAX_HEIGHT, 4) : 0;
-        // Today: full color; past days: 50% opacity via hex alpha
-        const barColor = day.isToday ? config.color : config.color + '80';
+        // Today: full color; past days: muted variant
+        const barColor = Platform.select({
+          android: day.isToday
+            ? Color.android.dynamic.primary
+            : Color.android.dynamic.primaryContainer,
+          default: day.isToday ? config.color : config.color + '80',
+        });
         return (
           <View key={day.dateKey} style={styles.column}>
             <View style={styles.barTrack}>

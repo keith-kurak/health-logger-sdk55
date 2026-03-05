@@ -1,5 +1,6 @@
-import { useFocusEffect, useRouter } from "expo-router";
+import { Color, useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
+import { useColorScheme, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import {
@@ -21,8 +22,6 @@ import {
 } from "@expo/ui/jetpack-compose/modifiers";
 
 import { DayNav } from "@/components/day-nav";
-import { ThemedView } from "@/components/themed-view";
-import { useTheme } from "@/hooks/use-theme";
 import {
   STATS,
   StatName,
@@ -53,8 +52,8 @@ function localMidnightToday(): Date {
 }
 
 export default function DashboardScreen() {
+  useColorScheme();
   const router = useRouter();
-  const theme = useTheme();
   const [currentDate, setCurrentDate] = useState<Date>(localMidnightToday);
   const [displayValues, setDisplayValues] = useState<Record<StatName, string>>(
     () => {
@@ -79,10 +78,10 @@ export default function DashboardScreen() {
   useFocusEffect(loadStats);
 
   return (
-    <ThemedView style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: Color.android.dynamic.surface }}>
       <SafeAreaView
         edges={["top"]}
-        style={{ backgroundColor: theme.background }}
+        style={{ backgroundColor: Color.android.dynamic.surface }}
       >
         <DayNav
           date={currentDate}
@@ -118,12 +117,12 @@ export default function DashboardScreen() {
                     modifiers={[
                       size(44, 44),
                       clip(Shapes.RoundedCorner(12)),
-                      background("#26" + config.color.slice(1)),
+                      background(Color.android.dynamic.primaryContainer),
                     ]}
                   >
                     <Icon
                       source={ANDROID_ICONS[config.icon.android]}
-                      tintColor={config.color}
+                      tintColor={Color.android.dynamic.primary}
                       size={22}
                     />
                   </Box>
@@ -131,7 +130,11 @@ export default function DashboardScreen() {
                 <ListItem.Trailing>
                   <Text
                     style={{ typography: "titleMedium", fontWeight: "600" }}
-                    color={isEmpty ? theme.textSecondary : theme.text}
+                    color={
+                      isEmpty
+                        ? (Color.android.dynamic.onSurfaceVariant as unknown as string)
+                        : (Color.android.dynamic.onSurface as unknown as string)
+                    }
                   >
                     {displayValue}
                   </Text>
@@ -141,6 +144,6 @@ export default function DashboardScreen() {
           })}
         </LazyColumn>
       </Host>
-    </ThemedView>
+    </View>
   );
 }

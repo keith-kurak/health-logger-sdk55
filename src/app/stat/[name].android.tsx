@@ -1,9 +1,16 @@
-import { Stack, useFocusEffect, useLocalSearchParams } from "expo-router";
+import {
+  Color,
+  Stack,
+  useFocusEffect,
+  useLocalSearchParams,
+} from "expo-router";
 import { useCallback, useRef, useState } from "react";
 import {
   Pressable,
+  Text as RNText,
   TextInput as RNTextInput,
   StyleSheet,
+  useColorScheme,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -17,10 +24,7 @@ import {
 } from "@expo/ui/jetpack-compose";
 import { fillMaxSize, fillMaxWidth } from "@expo/ui/jetpack-compose/modifiers";
 
-import { ThemedText } from "@/components/themed-text";
-import { ThemedView } from "@/components/themed-view";
 import { WeekChart } from "@/components/week-chart";
-import { useTheme } from "@/hooks/use-theme";
 import {
   Entry,
   STATS,
@@ -34,7 +38,9 @@ import {
 } from "@/lib/stats";
 
 export default function StatDetailScreen() {
-  const theme = useTheme();
+  // Required for dynamic colors to update on theme change
+  useColorScheme();
+
   const { name, date } = useLocalSearchParams<{
     name: StatName;
     date: string;
@@ -110,59 +116,78 @@ export default function StatDetailScreen() {
         options={{
           title: config.label,
           headerShown: true,
-          headerStyle: { backgroundColor: theme.background },
-          headerTintColor: theme.text,
+          headerStyle: {
+            backgroundColor: Color.android.dynamic.surface as unknown as string,
+          },
+          headerTintColor: Color.android.dynamic.onSurface as unknown as string,
           headerShadowVisible: false,
           unstable_sheetFooter: () => (
             <View
               style={[
                 styles.footer,
                 {
-                  backgroundColor: theme.background,
-                  borderTopColor: theme.backgroundElement,
+                  backgroundColor: Color.android.dynamic.surfaceContainerHigh,
+                  borderTopColor: Color.android.dynamic.outlineVariant,
                 },
               ]}
             >
               {config.inputType === "bloodPressure" ? (
                 <View style={styles.footerRow}>
                   <View style={styles.bpGroup}>
-                    <ThemedText type="small" themeColor="textSecondary">
+                    <RNText
+                      style={[
+                        styles.label,
+                        { color: Color.android.dynamic.onSurfaceVariant },
+                      ]}
+                    >
                       Systolic
-                    </ThemedText>
+                    </RNText>
                     <RNTextInput
                       ref={systolicRef}
                       style={[
                         styles.input,
                         {
-                          color: theme.text,
-                          borderColor: theme.backgroundElement,
+                          color: Color.android.dynamic.onSurface,
+                          borderColor: Color.android.dynamic.outline,
                         },
                       ]}
                       onChangeText={setSystolic}
                       value={systolic}
                       placeholder="120"
-                      placeholderTextColor={theme.textSecondary}
+                      placeholderTextColor={Color.android.dynamic.onSurfaceVariant}
                       keyboardType="numeric"
                     />
                   </View>
-                  <ThemedText style={styles.bpSlash}>/</ThemedText>
+                  <RNText
+                    style={[
+                      styles.bpSlash,
+                      { color: Color.android.dynamic.onSurfaceVariant },
+                    ]}
+                  >
+                    /
+                  </RNText>
                   <View style={styles.bpGroup}>
-                    <ThemedText type="small" themeColor="textSecondary">
+                    <RNText
+                      style={[
+                        styles.label,
+                        { color: Color.android.dynamic.onSurfaceVariant },
+                      ]}
+                    >
                       Diastolic
-                    </ThemedText>
+                    </RNText>
                     <RNTextInput
                       ref={diastolicRef}
                       style={[
                         styles.input,
                         {
-                          color: theme.text,
-                          borderColor: theme.backgroundElement,
+                          color: Color.android.dynamic.onSurface,
+                          borderColor: Color.android.dynamic.outline,
                         },
                       ]}
                       onChangeText={setDiastolic}
                       value={diastolic}
                       placeholder="80"
-                      placeholderTextColor={theme.textSecondary}
+                      placeholderTextColor={Color.android.dynamic.onSurfaceVariant}
                       keyboardType="numeric"
                     />
                   </View>
@@ -170,10 +195,10 @@ export default function StatDetailScreen() {
                     onPress={handleAdd}
                     style={[
                       styles.addButton,
-                      { backgroundColor: config.color },
+                      { backgroundColor: Color.android.dynamic.primary },
                     ]}
                   >
-                    <ThemedText style={styles.addButtonText}>+</ThemedText>
+                    <RNText style={styles.addButtonText}>+</RNText>
                   </Pressable>
                 </View>
               ) : (
@@ -184,14 +209,14 @@ export default function StatDetailScreen() {
                       styles.input,
                       styles.inputFlex,
                       {
-                        color: theme.text,
-                        borderColor: theme.backgroundElement,
+                        color: Color.android.dynamic.onSurface,
+                        borderColor: Color.android.dynamic.outline,
                       },
                     ]}
                     onChangeText={setSingleValue}
                     value={singleValue}
                     placeholder={`Enter ${config.unit}`}
-                    placeholderTextColor={theme.textSecondary}
+                    placeholderTextColor={Color.android.dynamic.onSurfaceVariant}
                     keyboardType={
                       config.inputType === "decimal" ? "decimal-pad" : "numeric"
                     }
@@ -200,10 +225,10 @@ export default function StatDetailScreen() {
                     onPress={handleAdd}
                     style={[
                       styles.addButton,
-                      { backgroundColor: config.color },
+                      { backgroundColor: Color.android.dynamic.primary },
                     ]}
                   >
-                    <ThemedText style={styles.addButtonText}>+</ThemedText>
+                    <RNText style={styles.addButtonText}>+</RNText>
                   </Pressable>
                 </View>
               )}
@@ -211,16 +236,19 @@ export default function StatDetailScreen() {
           ),
         }}
       />
-      <ThemedView style={{ flex: 1 }}>
+      <View
+        style={[styles.flex, { backgroundColor: Color.android.dynamic.surface }]}
+      >
         <SafeAreaView style={styles.flex} edges={["bottom"]}>
           {/* React Native section: date label + chart stay outside the Compose Host */}
-          <ThemedText
-            type="small"
-            themeColor="textSecondary"
-            style={styles.dateLabel}
+          <RNText
+            style={[
+              styles.dateLabel,
+              { color: Color.android.dynamic.onSurfaceVariant },
+            ]}
           >
             {longDateLabel}
-          </ThemedText>
+          </RNText>
           <WeekChart config={config} entries={allEntries} />
 
           {/* Jetpack Compose section: entries list */}
@@ -231,10 +259,7 @@ export default function StatDetailScreen() {
               verticalArrangement={{ spacedBy: 12 }}
             >
               {/* Entry count label */}
-              <Text
-                style={{ typography: "labelLarge" }}
-                color={theme.textSecondary}
-              >
+              <Text style={{ typography: "labelLarge" }}>
                 {entriesCountLabel}
               </Text>
 
@@ -250,7 +275,6 @@ export default function StatDetailScreen() {
                     <Button
                       onPress={() => handleDelete(entry.ts)}
                       variant="borderless"
-                      elementColors={{ contentColor: theme.textSecondary }}
                     >
                       ×
                     </Button>
@@ -260,7 +284,7 @@ export default function StatDetailScreen() {
             </LazyColumn>
           </Host>
         </SafeAreaView>
-      </ThemedView>
+      </View>
     </>
   );
 }
@@ -271,6 +295,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 8,
     textAlign: "right",
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: "500",
+  },
+  label: {
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: "500",
   },
   footer: {
     paddingHorizontal: 16,
@@ -310,7 +342,7 @@ const styles = StyleSheet.create({
     alignSelf: "flex-end",
   },
   addButtonText: {
-    color: "#ffffff",
+    color: Color.android.dynamic.onPrimary,
     fontSize: 24,
     lineHeight: 26,
   },
