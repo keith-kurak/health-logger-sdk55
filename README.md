@@ -2,6 +2,10 @@
 
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
+## Links to presentation
+
+[tiny presenter source](https://github.com/keith-kurak/tiny-presenter)
+
 ## Get started
 
 1. Install dependencies
