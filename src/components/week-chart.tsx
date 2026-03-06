@@ -1,4 +1,5 @@
-import { StyleSheet, View } from 'react-native';
+import { Color } from 'expo-router';
+import { Platform, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -19,9 +20,11 @@ type WeekChartProps = {
   entries: Entry[];
   /** When true, removes horizontal margin (chart sits inside a card that provides padding). */
   inCard?: boolean;
+  /** When true, renders with a transparent background (let the parent provide the background). */
+  noBackground?: boolean;
 };
 
-export function WeekChart({ config, entries, inCard }: WeekChartProps) {
+export function WeekChart({ config, entries, inCard, noBackground }: WeekChartProps) {
   const today = new Date();
   const todayKey = localDateKey(today);
 
@@ -42,11 +45,16 @@ export function WeekChart({ config, entries, inCard }: WeekChartProps) {
   return (
     <ThemedView
       type="backgroundElement"
-      style={[styles.container, inCard && styles.containerInCard]}>
+      style={[styles.container, inCard && styles.containerInCard, noBackground && styles.transparent]}>
       {days.map((day) => {
         const barH = day.nv !== null ? Math.max((day.nv / maxVal) * BAR_MAX_HEIGHT, 4) : 0;
-        // Today: full color; past days: 50% opacity via hex alpha
-        const barColor = day.isToday ? config.color : config.color + '80';
+        // Today: full color; past days: muted variant
+        const barColor = Platform.select({
+          android: day.isToday
+            ? Color.android.dynamic.primary
+            : Color.android.dynamic.primaryContainer,
+          default: day.isToday ? config.color : config.color + '80',
+        });
         return (
           <View key={day.dateKey} style={styles.column}>
             <View style={styles.barTrack}>
@@ -83,6 +91,9 @@ const styles = StyleSheet.create({
     borderRadius: 0,
     borderBottomLeftRadius: Spacing.three,
     borderBottomRightRadius: Spacing.three,
+  },
+  transparent: {
+    backgroundColor: 'transparent',
   },
   column: {
     flex: 1,

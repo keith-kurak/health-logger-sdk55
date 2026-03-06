@@ -1,0 +1,9 @@
+appId: com.keithkurak.health-logger-55
+---
+- launchApp
+- assertVisible: "Water"
+- assertVisible: "Fruit"
+- assertVisible: "Veggies"
+- assertVisible: "Steps"
+- tapOn: "Water"
+- assertVisible: "Water"

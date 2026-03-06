@@ -1,5 +1,6 @@
+import { Color } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
@@ -19,12 +20,11 @@ export function DayNav({ date, onPrev, onNext, isToday }: DayNavProps) {
   return (
     <View style={styles.row}>
       <Pressable onPress={onPrev} style={({ pressed }) => [styles.button, pressed && styles.pressed]}>
-        <SymbolView
-          name={{ ios: 'chevron.left', android: 'chevron_left', web: 'chevron_left' }}
-          size={20}
-          weight="medium"
-          tintColor={theme.text}
-        />
+        {Platform.OS === 'ios' ? (
+          <SymbolView name="chevron.left" size={20} weight="medium" tintColor={theme.text} />
+        ) : (
+          <Text style={[styles.chevron, { color: Color.android.dynamic.onSurface }]}>{'‹'}</Text>
+        )}
       </Pressable>
 
       <ThemedText type="default" style={styles.label}>
@@ -34,12 +34,11 @@ export function DayNav({ date, onPrev, onNext, isToday }: DayNavProps) {
       <Pressable
         onPress={isToday ? undefined : onNext}
         style={({ pressed }) => [styles.button, isToday ? styles.disabled : pressed && styles.pressed]}>
-        <SymbolView
-          name={{ ios: 'chevron.right', android: 'chevron_right', web: 'chevron_right' }}
-          size={20}
-          weight="medium"
-          tintColor={theme.text}
-        />
+        {Platform.OS === 'ios' ? (
+          <SymbolView name="chevron.right" size={20} weight="medium" tintColor={theme.text} />
+        ) : (
+          <Text style={[styles.chevron, { color: Color.android.dynamic.onSurface }]}>{'›'}</Text>
+        )}
       </Pressable>
     </View>
   );
@@ -61,6 +60,11 @@ const styles = StyleSheet.create({
   },
   disabled: {
     opacity: 0.3,
+  },
+  chevron: {
+    fontSize: 24,
+    lineHeight: 28,
+    fontWeight: '300',
   },
   label: {
     fontWeight: '600',

@@ -1,0 +1,81 @@
+name: E2E Tests
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  fingerprint:
+    name: Fingerprint
+    type: fingerprint
+
+  # --- iOS ---
+  get_ios_build:
+    name: Check existing iOS build
+    needs: [fingerprint]
+    type: get-build
+    params:
+      fingerprint_hash: ${{ needs.fingerprint.outputs.ios_fingerprint_hash }}
+      profile: e2e-test
+      platform: ios
+
+  repack_ios:
+    name: Repack iOS
+    needs: [get_ios_build]
+    if: ${{ needs.get_ios_build.outputs.build_id }}
+    type: repack
+    params:
+      build_id: ${{ needs.get_ios_build.outputs.build_id }}
+
+  build_ios:
+    name: Build iOS for E2E
+    needs: [get_ios_build]
+    if: ${{ !needs.get_ios_build.outputs.build_id }}
+    type: build
+    params:
+      platform: ios
+      profile: e2e-test
+
+  maestro_ios:
+    name: Maestro iOS
+    after: [repack_ios, build_ios]
+    type: maestro
+    params:
+      build_id: ${{ needs.repack_ios.outputs.build_id || needs.build_ios.outputs.build_id }}
+      flow_path: .maestro/
+
+  # --- Android ---
+  get_android_build:
+    name: Check existing Android build
+    needs: [fingerprint]
+    type: get-build
+    params:
+      fingerprint_hash: ${{ needs.fingerprint.outputs.android_fingerprint_hash }}
+      profile: e2e-test
+      platform: android
+
+  repack_android:
+    name: Repack Android
+    needs: [get_android_build]
+    if: ${{ needs.get_android_build.outputs.build_id }}
+    type: repack
+    params:
+      build_id: ${{ needs.get_android_build.outputs.build_id }}
+
+  build_android:
+    name: Build Android for E2E
+    needs: [get_android_build]
+    if: ${{ !needs.get_android_build.outputs.build_id }}
+    type: build
+    params:
+      platform: android
+      profile: e2e-test
+
+  maestro_android:
+    name: Maestro Android
+    after: [repack_android, build_android]
+    type: maestro
+    params:
+      build_id: ${{ needs.repack_android.outputs.build_id || needs.build_android.outputs.build_id }}
+      flow_path: .maestro/
